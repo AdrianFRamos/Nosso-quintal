@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "202689249283",
+    "project_id": "nosso-quintal-uv",
+    "storage_bucket": "nosso-quintal-uv.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:202689249283:android:81e0dba3327b05452ece36",
+        "android_client_info": {
+          "package_name": "br.com.nossoquintal.nosso_quintal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDOoGU9_NSiIzZ9r6TdHqI1PL6yRbMG0kY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

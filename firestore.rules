@@ -1,0 +1,50 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+    function logado() { return request.auth != null; }
+    function dono(uid) { return logado() && request.auth.uid == uid; }
+
+    // Feiras: cadastradas pela organização no console do Firebase.
+    match /feiras/{id} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Banca: vitrine pública; o documento tem o mesmo id do feirante.
+    match /bancas/{uid} {
+      allow read: if true;
+      allow write: if dono(uid);
+    }
+
+    match /produtos/{id} {
+      allow read: if true;
+      allow create: if dono(request.resource.data.bancaId);
+      allow update: if dono(resource.data.bancaId)
+                    && request.resource.data.bancaId == resource.data.bancaId;
+      allow delete: if dono(resource.data.bancaId);
+    }
+
+    // Encomenda: cliente não tem conta, então qualquer um cria — com os campos conferidos.
+    // ponytail: sem limite por pessoa; se aparecer spam, ligar o App Check do Firebase.
+    match /encomendas/{id} {
+      allow create: if request.resource.data.keys().hasOnly(
+                         ['bancaId', 'clienteNome', 'clienteTelefone', 'feiraNome', 'observacao', 'itens', 'total', 'status', 'criadaEm'])
+                    && request.resource.data.status == 'nova'
+                    && request.resource.data.clienteNome is string
+                    && request.resource.data.clienteNome.size() >= 2
+                    && request.resource.data.clienteNome.size() <= 80
+                    && request.resource.data.clienteTelefone is string
+                    && request.resource.data.clienteTelefone.size() <= 30
+                    && request.resource.data.observacao is string
+                    && request.resource.data.observacao.size() <= 500
+                    && request.resource.data.itens is list
+                    && request.resource.data.itens.size() >= 1
+                    && request.resource.data.itens.size() <= 50
+                    && exists(/databases/$(db)/documents/bancas/$(request.resource.data.bancaId));
+      allow read: if dono(resource.data.bancaId);
+      allow update: if dono(resource.data.bancaId)
+                    && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+                    && request.resource.data.status in ['separada', 'entregue', 'cancelada'];
+    }
+  }
+}
